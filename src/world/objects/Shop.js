@@ -1,5 +1,9 @@
 import * as THREE from "three";
-import {modelsLoader, modelsPath, textureLoader, texturesPath} from "./world_objects";
+import {modelsPath, texturesPath} from "./world_objects";
+import {OBJLoader} from "three/addons";
+
+const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
+const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 
 // Содержит геометрию здания магазина и cartCount геометрий тележек,
 // расположенных перед магазином.

@@ -1,6 +1,10 @@
 import * as THREE from "three";
 import colors from "../../colors.json";
-import {modelsLoader, modelsPath} from "./world_objects";
+import {modelsPath} from "./world_objects";
+import {OBJLoader} from "three/addons";
+
+
+const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager)
 
 export class Tree extends THREE.Object3D {
     constructor(leavesCount) {
