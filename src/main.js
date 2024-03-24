@@ -1,5 +1,5 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { RenderScene } from '../pkg/main_contents'
+import { RenderScene } from './main_contents'
 
 if (WebGL.isWebGLAvailable()) {
     RenderScene();

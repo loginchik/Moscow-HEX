@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import {World} from "./world";
+import {World} from "./world/world";
 import jsonData from "../src/data.json" assert { type: 'json' };
-import {Clock} from "./world";
-import {modelsManager2} from "./world_objects";
-import {camera, cameraMixer, cameraCLip} from "./cameras";
+import {Clock} from "./world/world";
+import {modelsManager2} from "./world/objects/world_objects";
+import {camera, cameraMixer, cameraCLip} from "./cameras/cameras";
 
 Clock.autoStart = false;
 THREE.Cache.enabled = true;

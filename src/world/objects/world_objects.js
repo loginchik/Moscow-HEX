@@ -1,14 +1,14 @@
 import * as THREE from "three";
 import {OBJLoader} from "three/addons";
-import {sunVertex, sunFragment} from "../public/shaders/sun";
-import colors from "../src/colors.json"
+import {sunVertex, sunFragment} from "./sun_shader";
+import colors from "../../colors.json"
 
 export const modelsManager2 = new THREE.LoadingManager();
 
 const modelsLoader = new OBJLoader(modelsManager2);
 const textureLoader = new THREE.TextureLoader(modelsManager2);
-const modelsPath = '../assets/models';
-const texturesPath = '../assets/textures';
+const modelsPath = '../../assets/models';
+const texturesPath = '../../assets/textures';
 
 class SunBase extends THREE.Object3D {
     R;
