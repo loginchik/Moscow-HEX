@@ -1,0 +1,49 @@
+body {
+    margin: 0;
+    font-family: "Roboto Light", sans-serif;
+    color: #FEFAE0;
+}
+
+canvas {
+    z-index: 5;
+}
+
+header {
+    width: calc(100vw / 4);
+    position: absolute;
+    right: 20px;
+    top: 30px;
+    z-index: 10;
+}
+
+h1 {
+    font-size: 20px;
+    padding: 0;
+    margin-bottom: 5px;
+}
+
+header p {
+    font-size: 13px;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 5px;
+}
+
+p#uber {
+    font-style: italic;
+    margin-bottom: 13px;
+}
+
+div#loadingBox, div#loadingBar {
+    position: absolute;
+}
+
+div#loadingBox {
+    border: 1px solid #BC6C25;
+}
+
+div#loadingBar {
+    transform-origin: left;
+    background: #BC6C25;
+    height: 10px;
+}
