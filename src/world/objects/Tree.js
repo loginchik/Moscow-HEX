@@ -2,7 +2,7 @@ import * as THREE from "three";
 import colors from "../../colors.json";
 import {modelsLoader, modelsPath} from "./world_objects";
 
-export class Tree extends THREE.Group {
+export class Tree extends THREE.Object3D {
     constructor(leavesCount) {
         super();
         // Создаём ствол

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 import colors from "../../colors.json"
 import {Tree} from "./Tree";
+import {Shop} from "./Shop";
 
 export const modelsLoadingManager = new THREE.LoadingManager();
 
@@ -13,7 +14,7 @@ export const texturesPath = '../../assets/textures';
 
 const landR = 6;
 const LandMaterial = new THREE.MeshLambertMaterial();
-LandMaterial.color.set('#283618');
+LandMaterial.color.set(colors['hexLand']);
 
 class Hex extends THREE.Object3D {
     constructor(featureData, times, positions) {
@@ -229,69 +230,6 @@ class Building extends THREE.Object3D {
         return Array.from(year.toString()).map(x => {
             return parseInt(x);
         })
-    }
-}
-
-const ShopMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${texturesPath}/shopColor.png`, function(texture) {
-    ShopMaterial.map = texture;
-    console.log('Загружена текстура магазина')
-}, undefined, function(error) {console.log(error)});
-const CartMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${texturesPath}/cartColor.png`, function(texture) {
-    CartMaterial.map = texture;
-    console.log('Загружена текстура тележки');
-}, undefined, function (error) {console.log(error)});
-textureLoader.load(`${texturesPath}/cartGlossy.png`, function(texture) {
-    CartMaterial.specularMap = texture;
-    console.log('Загружена текстура прозрачности тележки');
-}, undefined, function (error) {console.log(error)});
-CartMaterial.transparent = true;
-
-// Содержит геометрию здания магазина и cartCount геометрий тележек,
-// расположенных перед магазином.
-class Shop extends THREE.Object3D {
-    constructor(cartCount, hexID) {
-        super();
-        this.name = `${hexID}_shop`;
-        this.#building();
-        const carts = this.#carts(cartCount, hexID);
-        this.add(...carts);
-    }
-
-    // Создаёт геометрический объект здания магазина и присваивает ему необходимый материал.
-    #building() {
-        const ShopBuilding = new THREE.Mesh();
-        modelsLoader.load(`${modelsPath}/shop.obj`, function(object) {
-            ShopBuilding.geometry = object.children[0].geometry;
-            console.log('Загружена геометрия магазина')
-        }, undefined, function (error) {console.log(error)});
-        ShopBuilding.material = ShopMaterial;
-        this.add(ShopBuilding);
-    }
-
-    // Создаёт массив тележек, состоящий из cartCount объектов тележек,
-    // которые затем могут быть добавлены на сцену
-    #carts(cartCount, hexID) {
-        const carts = [];
-        for (let c = 0; c < cartCount; c++) {
-            const cartObject = new THREE.Mesh();
-            // Загружаем геометрию
-            modelsLoader.load(`${modelsPath}/shoppingCart.obj`, function(object) {
-                cartObject.geometry = object.children[0].geometry;
-                console.log('Загружена магазинная тележка');
-            }, undefined, function(error) {console.log(error)});
-            // Присваиваем материал
-            cartObject.material = CartMaterial;
-            // Масштабируем и позиционируем
-            cartObject.scale.set(.1, .1, .1);
-            cartObject.position.set(0.8, -0.4, 1.1 - c * 0.24);
-            // Присваиваем уникальное имя
-            cartObject.name = `${hexID}_cart${c}`;
-            // Добавляем в массив тележек
-            carts.push(cartObject);
-        }
-        return carts;
     }
 }
 

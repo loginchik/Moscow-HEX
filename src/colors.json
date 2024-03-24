@@ -1,6 +1,7 @@
 {
   "background": "#242424",
   "mainLand": "#DDA15E",
+  "hexLand": "#283618",
   "tree": {
     "trunk": "#283618",
     "leaves": "#606C38"
