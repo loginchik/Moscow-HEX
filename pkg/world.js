@@ -57,8 +57,8 @@ class World extends THREE.Scene {
         const Hexes = new THREE.Group();
         jsonData['features'].map(record => {
             // Вычисляем положение текущего гекса
-            const xPosition = record['x_normalized_2'] * 44;
-            const zPosition = -record['y_normalized_2'] * 15;
+            const xPosition = record['x'] * 44;
+            const zPosition = -record['y'] * 15;
 
             // Создаём объекты, которые нужно поставить на землю
             const hexObjects = new Hex(record, times, positions);

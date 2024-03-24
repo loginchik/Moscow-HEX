@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 import {sunVertex, sunFragment} from "../public/shaders/sun";
-import {mod} from "three/nodes";
 export const modelsManager2 = new THREE.LoadingManager();
 
 const modelsLoader = new OBJLoader(modelsManager2);
@@ -129,12 +128,12 @@ class Hex extends THREE.Object3D {
     constructor(featureData, times, positions) {
         super();
 
-        const meanFloors = featureData['mean_floors'];
-        const maxFloors = featureData['max_floors'];
-        const meanYear = featureData['year_mean'];
-        const maxYear = featureData['year_max'];
-        const commercialRatio = featureData['commercial_ratio'];
-        const cost = featureData['cost_mean_normalized'];
+        const meanFloors = featureData['meanFloors'];
+        const maxFloors = featureData['maxFloors'];
+        const meanYear = featureData['meanYear'];
+        const maxYear = featureData['maxYear'];
+        const commercialRatio = featureData['commercialRatio'];
+        const cost = featureData['cost'];
 
         // Рассчитываем необходимые переменные
         const cartsCount = Math.floor(commercialRatio * 10);
