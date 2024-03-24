@@ -1,9 +1,9 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { RenderScene } from './main_contents'
+import { RenderScene } from './src/main_contents'
 
 if (WebGL.isWebGLAvailable()) {
     RenderScene();
 } else {
     const warning = WebGL.getWebGLErrorMessage();
-    document.getElementById( 'container' ).appendChild( warning );
+    document.body.appendChild( warning );
 }
