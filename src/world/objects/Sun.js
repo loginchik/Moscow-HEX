@@ -1,5 +1,6 @@
 import * as THREE from "three";
 
+// Вершинный шейдер для солнца
 const sunVertex = `
 varying vec2 vUv;
 
@@ -9,6 +10,7 @@ void main() {
 }
 `
 
+// Фрагментарный шейдер для солнца
 const sunFragment = `
 #define EPSILON 0.02
 
@@ -29,6 +31,7 @@ void main() {
 }
 `
 
+// Объект солнца, который летает вокруг всего мира и освещает его
 export class SunBase extends THREE.Object3D {
     R;
 
@@ -37,14 +40,15 @@ export class SunBase extends THREE.Object3D {
         this.name = 'Sun';
         this.R = R;
         this.animationPeriod = animationPeriod;
+        // Создаём сферу солнца
         this.mesh = this.#mesh();
         this.add(this.mesh);
-
+        // Создаём объект света
         this.maxIntensity = 10000;
         const SunColor = new THREE.Color(1., .9, .5);
         this.light = new THREE.PointLight(SunColor, 0);
         this.add(this.light);
-
+        // Рассчитываем анимации
         this.createAnimations();
 
         this.movementMixer = new THREE.AnimationMixer(this);
@@ -81,11 +85,12 @@ export class SunBase extends THREE.Object3D {
             visibles.push(visible);
             // Изменяем интенсивность солнечного света
             const angle = this.#sunAngle(i);
-            const intensity = Math.sin(angle) * this.maxIntensity;
+            const intensityIndex = Math.max(0, Math.sin(angle));
+            const intensity = intensityIndex * this.maxIntensity;
             intensities.push(intensity);
 
-            const greens = Math.sin(angle) * .8 + .1;
-            const blues = Math.sin(angle) * .4 + .1;
+            const greens = Math.sin(angle) * .8;
+            const blues = Math.sin(angle) * .4;
             colors.push(1, greens, blues);
         }
 
@@ -107,6 +112,8 @@ export class SunBase extends THREE.Object3D {
         this.animations.push(movementClip, sunLightClip, sunColorClip);
     }
 
+    // Создаёт массив времён и положений солнца в каждый конкретный момент.
+    // На основе этих массивов впоследствии создаются анимации.
     positionInTime() {
         const times = [], positions = [];
         // Временный вектор для расчёта позиции
@@ -123,9 +130,12 @@ export class SunBase extends THREE.Object3D {
         return {times, positions};
     }
 
+    // Создаёт сферу солнца с материалом, основанным на шейдерах
     #mesh() {
         const mesh = new THREE.Mesh();
+        // Создаём сферу
         mesh.geometry = new THREE.SphereGeometry(2);
+        // Создаём материал на основе шейдера
         mesh.material = new THREE.ShaderMaterial({
             vertexShader: sunVertex, fragmentShader: sunFragment,
             uniforms: {
@@ -140,6 +150,8 @@ export class SunBase extends THREE.Object3D {
         return mesh;
     }
 
+    // Рассчитывает позицию солнца на окружности вращения вокруг мира
+    // с радиусом, заданным при создании солнца
     calculatePosition(angle) {
         const x = Math.cos(angle) * this.R;
         const y = Math.sin(angle) * this.R;
