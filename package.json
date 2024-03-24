@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@vercel/speed-insights": "^1.0.10",
     "three": "^0.162.0"
   },
   "devDependencies": {
