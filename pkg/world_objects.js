@@ -7,7 +7,8 @@ export const modelsManager2 = new THREE.LoadingManager();
 
 const modelsLoader = new OBJLoader(modelsManager2);
 const textureLoader = new THREE.TextureLoader(modelsManager2);
-const modelsPath = '/geometry_models';
+const modelsPath = '../assets/models';
+const texturesPath = '../assets/textures';
 
 class SunBase extends THREE.Object3D {
     R;
@@ -237,12 +238,12 @@ class Tree extends THREE.Group {
 }
 
 const FirstFloorMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${modelsPath}/firstFloor4.png`, function (texture) {
+textureLoader.load(`${texturesPath}/firstFloor.png`, function (texture) {
     FirstFloorMaterial.map = texture;
     console.log('Загружена текстура первого этажа')
 }, undefined, function(error) { console.log(error) })
 const OtherFloorMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${modelsPath}/Otherfloor1.png`, function (texture) {
+textureLoader.load(`${texturesPath}/otherFloor.png`, function (texture) {
     OtherFloorMaterial.map = texture;
     console.log('Загружена текстура типичного этажа')
 }, undefined, function(error) { console.log(error) })
@@ -324,7 +325,7 @@ class Building extends THREE.Object3D {
 
     #firstFloor() {
         const floorObject = new THREE.Mesh();
-        modelsLoader.load(`${modelsPath}/firstFloor3.obj`, function(object){
+        modelsLoader.load(`${modelsPath}/firstFloor.obj`, function(object){
             floorObject.geometry = object.children[0].geometry;
             console.log('Загружена геометрия первого этажа')
         }, undefined, function(error) {console.log(error)})
@@ -334,7 +335,7 @@ class Building extends THREE.Object3D {
 
     #otherFloor(floorNumber) {
         const floor = new THREE.Mesh();
-        modelsLoader.load(`${modelsPath}/otherFloor2.obj`, function (geometry) {
+        modelsLoader.load(`${modelsPath}/otherFloor.obj`, function (geometry) {
             floor.geometry = geometry.children[0].geometry;
             console.log('Загружена геометрия типичного этажа')
         }, undefined, function (error) {
@@ -370,16 +371,16 @@ class Building extends THREE.Object3D {
 }
 
 const ShopMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${modelsPath}/shopColor.png`, function(texture) {
+textureLoader.load(`${texturesPath}/shopColor.png`, function(texture) {
     ShopMaterial.map = texture;
     console.log('Загружена текстура магазина')
 }, undefined, function(error) {console.log(error)});
 const CartMaterial = new THREE.MeshLambertMaterial();
-textureLoader.load(`${modelsPath}/cartColor.png`, function(texture) {
+textureLoader.load(`${texturesPath}/cartColor.png`, function(texture) {
     CartMaterial.map = texture;
     console.log('Загружена текстура тележки');
 }, undefined, function (error) {console.log(error)});
-textureLoader.load(`${modelsPath}/cartGlossy.png`, function(texture) {
+textureLoader.load(`${texturesPath}/cartGlossy.png`, function(texture) {
     CartMaterial.specularMap = texture;
     console.log('Загружена текстура прозрачности тележки');
 }, undefined, function (error) {console.log(error)});
