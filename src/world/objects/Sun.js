@@ -34,6 +34,7 @@ export class SunBase extends THREE.Object3D {
 
     constructor(R = 63, animationPeriod = 20) {
         super();
+        this.name = 'Sun';
         this.R = R;
         this.animationPeriod = animationPeriod;
         this.mesh = this.#mesh();
