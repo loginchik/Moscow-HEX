@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 import {sunVertex, sunFragment} from "../public/shaders/sun";
+import colors from "../src/colors.json"
+
 export const modelsManager2 = new THREE.LoadingManager();
 
 const modelsLoader = new OBJLoader(modelsManager2);
@@ -194,7 +196,7 @@ class Tree extends THREE.Group {
         super();
         // Создаём ствол
         const TrunkMaterial = new THREE.MeshLambertMaterial();
-        TrunkMaterial.color.set(new THREE.Color('#283618'));
+        TrunkMaterial.color.set(new THREE.Color(colors["tree"]["trunk"]));
         const Trunk = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/treeTrunk.obj`, function (object) {
             Trunk.geometry = object.children[0].geometry;
@@ -204,7 +206,7 @@ class Tree extends THREE.Group {
 
         // Создаём листья
         const LeavesMaterial = new THREE.MeshLambertMaterial();
-        LeavesMaterial.color.set(new THREE.Color('#606C38'));
+        LeavesMaterial.color.set(new THREE.Color(colors["tree"]["leaves"]));
         if (leavesCount > 0) {
             const crone = new THREE.Object3D();
             for (let l = 0; l < leavesCount; l++ ) {

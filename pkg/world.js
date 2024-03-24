@@ -1,13 +1,14 @@
 import * as THREE from "three";
 import {SunBase, Hex} from './world_objects'
 import {EastLight, WestLight} from "./static_lights";
+import colors from "../src/colors.json"
 
 const Clock = new THREE.Clock();
 
 class World extends THREE.Scene {
     constructor() {
         super();
-        this.background =  new THREE.Color( '#242424');
+        this.background =  new THREE.Color(colors["background"]);
         this.mixers = [];
         this.buildings = [];
         this.hexCollection = [];
@@ -87,7 +88,7 @@ class World extends THREE.Scene {
         // Создаём объект самой большой земли-подставки
         const mainLandR = 60;
         const MainLandMaterial = new THREE.MeshLambertMaterial();
-        MainLandMaterial.color.set('#DDA15E');
+        MainLandMaterial.color.set(colors["mainLand"]);
         const mainLandGeo = new THREE.CylinderGeometry(mainLandR, mainLandR * 1.2, 10, 16);
         const MainLand = new THREE.Mesh(mainLandGeo, MainLandMaterial);
         MainLand.position.y = -5.2;

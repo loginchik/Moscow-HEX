@@ -1,0 +1,8 @@
+{
+  "background": "#242424",
+  "mainLand": "#DDA15E",
+  "tree": {
+    "trunk": "#283618",
+    "leaves": "#606C38"
+  }
+}
