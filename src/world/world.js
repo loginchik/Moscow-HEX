@@ -48,14 +48,7 @@ class World extends THREE.Scene {
     }
 
     #hexes(jsonData, times, positions) {
-        // Создаём объект гекса, который используется как земля для района
-        const landR = 6;
-        const LandMaterial = new THREE.MeshLambertMaterial();
-        LandMaterial.color.set('#283618');
-        const landGeometry = new THREE.CylinderGeometry(landR, landR * 1.05, 1, 6);
-        const HexLand = new THREE.Mesh(landGeometry, LandMaterial);
-
-        // Создаём гексы на основе данных из json-файла
+         // Создаём гексы на основе данных из json-файла
         const Hexes = new THREE.Group();
         jsonData['features'].map(record => {
             // Вычисляем положение текущего гекса
@@ -64,23 +57,19 @@ class World extends THREE.Scene {
 
             // Создаём объекты, которые нужно поставить на землю
             const hexObjects = new Hex(record, times, positions);
-            hexObjects.position.y = .82;
-            hexObjects.name = 'hex';
             this.buildings.push(...hexObjects.buildings);
             this.mixers.push(...hexObjects.lightsMixers);
             this.mixers.push(...hexObjects.birdsMixers);
             this.hexCollection.push(hexObjects)
             // Рандомно поворачиваем объекты для разнообразия внешнего вида
-            hexObjects.rotation.set(0, Math.random() * 360, 0);
-            // Создаём копию земли
-            const hexLand = HexLand.clone();
-            // Собираем всё вместе и перемещаем в нужное положение
-            const hex = new THREE.Object3D();
-            hex.add(hexLand, hexObjects);
-            hex.position.set(xPosition, 0, zPosition);
+            const rotation = Math.round(Math.random() * 6);
+            const angle = rotation * 60 * Math.PI / 180;
+            hexObjects.rotateY(angle);
+
+            hexObjects.position.set(xPosition, 0, zPosition);
 
             // Добавляем объект на сцену
-            Hexes.add(hex);
+            Hexes.add(hexObjects);
         })
         return Hexes;
     }
@@ -94,6 +83,7 @@ class World extends THREE.Scene {
         const MainLand = new THREE.Mesh(mainLandGeo, MainLandMaterial);
         MainLand.position.y = -5.2;
         MainLand.scale.z = 0.5;
+        MainLand.name = 'Main land';
         return MainLand;
     }
 }

@@ -1,18 +1,26 @@
 import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 import colors from "../../colors.json"
+import {Tree} from "./Tree";
 
 export const modelsLoadingManager = new THREE.LoadingManager();
 
-const modelsLoader = new OBJLoader(modelsLoadingManager);
-const textureLoader = new THREE.TextureLoader(modelsLoadingManager);
-const modelsPath = '../../assets/models';
-const texturesPath = '../../assets/textures';
+export const modelsLoader = new OBJLoader(modelsLoadingManager);
+export const textureLoader = new THREE.TextureLoader(modelsLoadingManager);
+export const modelsPath = '../../assets/models';
+export const texturesPath = '../../assets/textures';
+
+
+const landR = 6;
+const LandMaterial = new THREE.MeshLambertMaterial();
+LandMaterial.color.set('#283618');
 
 class Hex extends THREE.Object3D {
     constructor(featureData, times, positions) {
         super();
 
+        // Раскрываем данные из записи
+        const id = featureData['id'];
         const meanFloors = featureData['meanFloors'];
         const maxFloors = featureData['maxFloors'];
         const meanYear = featureData['meanYear'];
@@ -24,14 +32,20 @@ class Hex extends THREE.Object3D {
         const cartsCount = Math.floor(commercialRatio * 10);
         const birdsCount = Math.floor(cost * 100);
 
-        this.meanBuilding = new Building(meanFloors, meanYear, times, positions);
-        this.maxBuilding = new Building(maxFloors, maxYear, times, positions);
-        this.shop = new Shop(cartsCount);
-        this.birds = new THREE.Group();
-        for (let b = 0; b <birdsCount; b++) {
-            this.birds.add(new Bird());
-        }
+        // Присваиваем гексу уникальное имя
+        this.name = `HEX_${id}`;
 
+        // Создаём объекты гекса
+        this.meanBuilding = new Building(meanFloors, meanYear, times, positions, this.name, 'Mean');
+        this.maxBuilding = new Building(maxFloors, maxYear, times, positions, this.name, 'Max');
+        this.shop = new Shop(cartsCount, this.name);
+        this.birds = new THREE.Group();
+        this.birds.name = `${this.name}_birds`;
+        for (let b = 0; b <birdsCount; b++) {
+            const name = `${this.name}_bird${b}`;
+            const bird = new Bird(name);
+            this.birds.add(bird);
+        }
         // Поворачиваем здание-максимум на 180 градусов
         this.meanBuilding.rotation.set(0, Math.PI, 0);
         // Сдвигаем дома
@@ -42,13 +56,24 @@ class Hex extends THREE.Object3D {
         // Сдвигаем магазин
         this.shop.position.x += 3.5 / 2;
         this.shop.position.y = .1;
-
         this.add(this.meanBuilding, this.maxBuilding, this.shop);
-
+        // Если в гексе должны быть птицы, создаём их
         if (birdsCount > 0) {
             this.birds.position.set(2, 1, 0);
             this.add(this.birds);
         }
+
+        // Поднимаем все объекты над уровнем земли
+        for (let object of [this.meanBuilding, this.maxBuilding, this.shop]) {
+            object.position.y += .82;
+        }
+        // Создаём землю под гексом
+        const landGeometry = new THREE.CylinderGeometry(landR, landR * 1.05, 1, 6);
+        const HexLand = new THREE.Mesh(landGeometry, LandMaterial);
+        HexLand.name = `${this.name}_land`;
+        this.add(HexLand);
+
+        console.log(`Создан ${this.name}`);
     }
 
     get birdsMixers() {
@@ -74,51 +99,6 @@ class Hex extends THREE.Object3D {
     }
 }
 
-class Tree extends THREE.Group {
-    constructor(leavesCount) {
-        super();
-        // Создаём ствол
-        const TrunkMaterial = new THREE.MeshLambertMaterial();
-        TrunkMaterial.color.set(new THREE.Color(colors["tree"]["trunk"]));
-        const Trunk = new THREE.Mesh();
-        modelsLoader.load(`${modelsPath}/treeTrunk.obj`, function (object) {
-            Trunk.geometry = object.children[0].geometry;
-        })
-        Trunk.material = TrunkMaterial;
-        this.add(Trunk);
-
-        // Создаём листья
-        const LeavesMaterial = new THREE.MeshLambertMaterial();
-        LeavesMaterial.color.set(new THREE.Color(colors["tree"]["leaves"]));
-        if (leavesCount > 0) {
-            const crone = new THREE.Object3D();
-            for (let l = 0; l < leavesCount; l++ ) {
-                const r = this.#croneRadius(l);
-                const geometry = new THREE.IcosahedronGeometry(r);
-                const mesh = new THREE.Mesh(geometry, LeavesMaterial);
-                mesh.position.y = this.#croneYPos(l);
-                crone.add(mesh);
-            }
-            this.add(crone);
-        }
-    }
-
-    static xPosition(treeNumber) {
-        return treeNumber * 1.3;
-    }
-
-    #croneRadius(leaveCount) {
-        const minR = 0.1;
-        const maxLeaves = 8, minLeaves = 0;
-        const leaveCountNormalized = (leaveCount - minLeaves) / (maxLeaves - minLeaves);
-        return leaveCountNormalized * minR + minR;
-    }
-
-    #croneYPos(leaveCount) {
-        return 1.3 - 0.12 * leaveCount;
-    }
-}
-
 const FirstFloorMaterial = new THREE.MeshLambertMaterial();
 textureLoader.load(`${texturesPath}/firstFloor.png`, function (texture) {
     FirstFloorMaterial.map = texture;
@@ -131,9 +111,9 @@ textureLoader.load(`${texturesPath}/otherFloor.png`, function (texture) {
 }, undefined, function(error) { console.log(error) })
 
 class Building extends THREE.Object3D {
-    constructor(floorCount, yearBuilt, times, positions) {
+    constructor(floorCount, yearBuilt, times, positions, hexID, buildingType) {
         super();
-        this.name = 'building';
+        this.name = `${hexID}_building${buildingType}`;
         // Ставим первый этаж
         this.#firstFloor();
         // Ставим остальные этажи на первый
@@ -268,64 +248,78 @@ textureLoader.load(`${texturesPath}/cartGlossy.png`, function(texture) {
 }, undefined, function (error) {console.log(error)});
 CartMaterial.transparent = true;
 
+// Содержит геометрию здания магазина и cartCount геометрий тележек,
+// расположенных перед магазином.
 class Shop extends THREE.Object3D {
-    constructor(cartCount) {
+    constructor(cartCount, hexID) {
         super();
+        this.name = `${hexID}_shop`;
         this.#building();
-        this.add(this.#carts(cartCount));
+        const carts = this.#carts(cartCount, hexID);
+        this.add(...carts);
     }
 
+    // Создаёт геометрический объект здания магазина и присваивает ему необходимый материал.
     #building() {
         const ShopBuilding = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/shop.obj`, function(object) {
             ShopBuilding.geometry = object.children[0].geometry;
             console.log('Загружена геометрия магазина')
-        }, undefined, function (error) {console.log(error)})
-        ;
+        }, undefined, function (error) {console.log(error)});
         ShopBuilding.material = ShopMaterial;
         this.add(ShopBuilding);
     }
 
-    #carts(cartCount) {
-        const carts = new THREE.Object3D();
+    // Создаёт массив тележек, состоящий из cartCount объектов тележек,
+    // которые затем могут быть добавлены на сцену
+    #carts(cartCount, hexID) {
+        const carts = [];
         for (let c = 0; c < cartCount; c++) {
             const cartObject = new THREE.Mesh();
+            // Загружаем геометрию
             modelsLoader.load(`${modelsPath}/shoppingCart.obj`, function(object) {
                 cartObject.geometry = object.children[0].geometry;
                 console.log('Загружена магазинная тележка');
             }, undefined, function(error) {console.log(error)});
+            // Присваиваем материал
             cartObject.material = CartMaterial;
+            // Масштабируем и позиционируем
             cartObject.scale.set(.1, .1, .1);
             cartObject.position.set(0.8, -0.4, 1.1 - c * 0.24);
-            this.add(cartObject);
+            // Присваиваем уникальное имя
+            cartObject.name = `${hexID}_cart${c}`;
+            // Добавляем в массив тележек
+            carts.push(cartObject);
         }
         return carts;
     }
 }
 
+// Содержит геометрию птицы и анимацию её полёта.
 class Bird extends THREE.Object3D {
-    constructor() {
+    constructor(name) {
         super();
-
+        this.name = name;
+        // Создаём материал со случайным цветом птицы
         const BirdMaterial = new THREE.MeshLambertMaterial();
-        const red = Math.random() * .3 + .7;
-        const green = Math.random() * .5 + .5;
-        const blue = Math.random() * .3 + .7;
-        BirdMaterial.color.set(red, green, blue);
+        BirdMaterial.color.set(this.#materialRandomColor());
+        // Загружаем геометрию птицы и создаём геометрический объект
         const birdMesh = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/bird.obj`, function( object ){
             birdMesh.geometry = object.children[0].geometry;
             console.log('Загружена геометрия птицы');
         })
         birdMesh.material = BirdMaterial;
+        // Добавляем геометрический объект в объект
         this.add(birdMesh);
+        // Масштабируем и позиционируем птицу
         this.scale.set(.1, .1, .1);
         this.zRotation =  this.#rotationZ();
         this.rotation.z = this.zRotation * Math.PI / 180;
         this.position.x = Bird.mappedPosition(0, .8);
         this.position.y = Bird.mappedPosition(0, 5);
         this.position.z = Bird.mappedPosition(0, 2.5);
-
+        // Создаём анимацию полёта
         this.createAnimation();
         this.mixer = new THREE.AnimationMixer(this);
     }
@@ -376,6 +370,13 @@ class Bird extends THREE.Object3D {
             angleMode = -1;
         }
         return (Math.random() * 25 + 25) * angleMode;
+    }
+
+    #materialRandomColor() {
+        const red = Math.random() * .3 + .7;
+        const green = Math.random() * .5 + .5;
+        const blue = Math.random() * .3 + .7;
+        return new THREE.Color(red, green, blue);
     }
 
     static mappedPosition(minPos, maxPos) {
