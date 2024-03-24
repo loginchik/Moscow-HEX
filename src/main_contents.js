@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {World} from "./world/world";
 import jsonData from "../src/data.json" assert { type: 'json' };
 import {Clock} from "./world/world";
-import {modelsManager2} from "./world/objects/world_objects";
+import {modelsLoadingManager} from "./world/objects/world_objects";
 import {camera, cameraMixer, cameraCLip} from "./cameras/cameras";
 
 Clock.autoStart = false;
@@ -38,7 +38,7 @@ loadingBox.style.left = `${(window.innerWidth - 100) / 2}px`;
 loadingBar.style.left = `${(window.innerWidth - 100) / 2}px`;
 header.hidden = true;
 
-modelsManager2.onLoad = function() {
+modelsLoadingManager.onLoad = function() {
     Clock.start();
     world.live();
     setupCompleted = true;
@@ -48,7 +48,7 @@ modelsManager2.onLoad = function() {
     loadingBar.hidden = true;
     header.hidden = false;
 }
-modelsManager2.onProgress = function (url, itemsLoaded, itemsTotal) {
+modelsLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
     loadingBar.style.width = `${itemsLoaded / itemsTotal * 100}px`
 }
 

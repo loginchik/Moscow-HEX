@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import {SunBase, Hex} from './objects/world_objects'
+import {Hex} from './objects/world_objects'
+import {SunBase} from "./objects/Sun";
 import {EastLight, WestLight} from "./static_lights";
 import colors from "../colors.json"
 
