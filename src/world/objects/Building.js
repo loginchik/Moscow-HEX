@@ -1,10 +1,22 @@
 import * as THREE from "three";
 import {Tree} from "./Tree";
-import {modelsPath, texturesPath} from "./world_objects";
+import {modelsPath} from "./world_objects";
 import {OBJLoader} from "three/addons";
 
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
+
+const firstFloorTexture = textureLoader.load(`../assets/textures/firstFloor.png`)
+const FirstFloorMaterial = new THREE.MeshLambertMaterial({
+    map: firstFloorTexture,
+});
+
+const otherFloorTexture = textureLoader.load(`../assets/textures/otherFloor.png`)
+const OtherFloorMaterial = new THREE.MeshLambertMaterial({
+    map: otherFloorTexture,
+});
+
+const DoorLightColor = new THREE.Color(1, .8, .5);
 
 export class Building extends THREE.Object3D {
     constructor(floorCount, yearBuilt, times, positions, hexID, buildingType) {
@@ -39,7 +51,6 @@ export class Building extends THREE.Object3D {
         const entrance = Math.floor(Math.random() * 4);
         const xPos = -1.9 + entrance * 1.3;
 
-        const DoorLightColor = new THREE.Color(1, .8, .5);
         const doorLight = new THREE.SpotLight(DoorLightColor, 0);
         doorLight.angle = Math.PI / 4;
         doorLight.penumbra = .3;
@@ -82,13 +93,6 @@ export class Building extends THREE.Object3D {
     }
 
     #firstFloor() {
-        const FirstFloorMaterial = new THREE.MeshLambertMaterial();
-        textureLoader.load(`${texturesPath}/firstFloor.png`, function (texture) {
-            FirstFloorMaterial.map = texture;
-            console.log('Загружена текстура первого этажа')
-        }, undefined, function(error) { console.log(error) })
-
-
         const floorObject = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/firstFloor.obj`, function(object){
             floorObject.geometry = object.children[0].geometry;
@@ -99,13 +103,6 @@ export class Building extends THREE.Object3D {
     }
 
     #otherFloor(floorNumber) {
-        const OtherFloorMaterial = new THREE.MeshLambertMaterial();
-        textureLoader.load(`${texturesPath}/otherFloor.png`, function (texture) {
-            OtherFloorMaterial.map = texture;
-            console.log('Загружена текстура типичного этажа')
-        }, undefined, function(error) { console.log(error) })
-
-
         const floor = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/otherFloor.obj`, function (geometry) {
             floor.geometry = geometry.children[0].geometry;

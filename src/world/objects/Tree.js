@@ -6,12 +6,13 @@ import {OBJLoader} from "three/addons";
 
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager)
 
+const TrunkMaterial = new THREE.MeshLambertMaterial();
+TrunkMaterial.color.set(new THREE.Color(colors["tree"]["trunk"]));
+
 export class Tree extends THREE.Object3D {
     constructor(leavesCount) {
         super();
         // Создаём ствол
-        const TrunkMaterial = new THREE.MeshLambertMaterial();
-        TrunkMaterial.color.set(new THREE.Color(colors["tree"]["trunk"]));
         const Trunk = new THREE.Mesh();
         // Trunk.geometry = LoadTrunkGeometry()
         modelsLoader.load(`${modelsPath}/treeTrunk.obj`, function (object) {

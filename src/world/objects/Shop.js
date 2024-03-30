@@ -5,6 +5,19 @@ import {OBJLoader} from "three/addons";
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 
+const ShopMaterialTexture = textureLoader.load(`../assets/textures/shopColor.png`);
+const ShopMaterial = new THREE.MeshLambertMaterial({
+    map: ShopMaterialTexture,
+});
+
+const CartColor = textureLoader.load(`../assets/textures/cartColor.png`);
+const CartSpecular = textureLoader.load(`../assets/textures/cartGlossy.png`);
+const CartMaterial = new THREE.MeshLambertMaterial({
+    map: CartColor,
+    specularMap: CartSpecular,
+    transparent: true,
+});
+
 // Содержит геометрию здания магазина и cartCount геометрий тележек,
 // расположенных перед магазином.
 export class Shop extends THREE.Object3D {
@@ -14,11 +27,6 @@ export class Shop extends THREE.Object3D {
         this.name = `${hexID}_shop`;
 
         // Создаём объект здания
-        const ShopMaterial = new THREE.MeshLambertMaterial();
-        textureLoader.load(`${texturesPath}/shopColor.png`, function(texture) {
-            ShopMaterial.map = texture;
-            console.log('Загружена текстура магазина')
-        }, undefined, function(error) {console.log(error)});
         const ShopBuilding = new THREE.Mesh();
         modelsLoader.load(`${modelsPath}/shop.obj`, function(object) {
             ShopBuilding.geometry = object.children[0].geometry;
@@ -35,16 +43,6 @@ export class Shop extends THREE.Object3D {
     // Создаёт массив тележек, состоящий из cartCount объектов тележек,
     // которые затем могут быть добавлены на сцену
     #createCarts(cartCount, hexID) {
-        const CartMaterial = new THREE.MeshLambertMaterial();
-        textureLoader.load(`${texturesPath}/cartColor.png`, function(texture) {
-            CartMaterial.map = texture;
-            console.log('Загружена текстура тележки');
-        }, undefined, function (error) {console.log(error)});
-        textureLoader.load(`${texturesPath}/cartGlossy.png`, function(texture) {
-            CartMaterial.specularMap = texture;
-            console.log('Загружена текстура прозрачности тележки');
-        }, undefined, function (error) {console.log(error)});
-        CartMaterial.transparent = true;
 
         const carts = [];
         for (let c = 0; c < cartCount; c++) {

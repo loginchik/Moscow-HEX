@@ -2,10 +2,8 @@ import * as THREE from "three";
 import {World} from "./world/world";
 import jsonData from "../src/data.json" assert { type: 'json' };
 import {Clock} from "./world/world";
-import {modelsLoadingManager} from "./world/objects/world_objects";
 import {camera, cameraMixer, cameraCLip} from "./cameras/cameras";
 import {Vector2} from "three";
-import codeNode from "three/addons/nodes/code/CodeNode";
 
 Clock.autoStart = false;
 THREE.Cache.enabled = true;
@@ -13,14 +11,26 @@ let setupCompleted = false;
 
 const renderer = createRenderer();
 const mouse = new Vector2();
-const world = createWorldScene();
+
+const worldAndHexes = createWorldScene();
+const world = worldAndHexes['world'], hexes = worldAndHexes['hexes'];
 let hexToOpen = null;
+let viewMode = 'world';
 
 // Рендерит необходимые объекты на сцене так, чтобы все работало сладко-гладко
 export function RenderScene() {
     requestAnimationFrame(RenderScene);
     if (setupCompleted) {
-        RenderWorldScene();
+        if (viewMode === 'world') {
+            const deltaTime = Clock.getDelta();
+            const totalTime = Clock.getElapsedTime();
+
+            renderer.render(world, camera);
+            world.update(deltaTime, totalTime);
+            cameraMixer.update(deltaTime);
+            camera.lookAt(0, 0, 0);
+            ManageIntersections();
+        }
     }
 }
 
@@ -36,26 +46,23 @@ function ManageIntersections() {
     const intersects = raycaster.intersectObjects(world.children);
     if (intersects.length > 0) {
         const closest = intersects[0].object;
-        const intersectingHexID = defineHexFromIntersection(closest);
+        const intersectingHexID = getHexIDFromIntersection(closest);
         if (intersectingHexID !== null) {
-            for (let hex of world.hexes.children) {
+            for (let hex of hexes) {
                 if (hex.name.includes(intersectingHexID)) {
                     hexToOpen = hex;
                     break
                 }
             }
-            // console.log('Intersecting', intersectingHexID);
         } else {
             hexToOpen = null;
         }
     } else {
         hexToOpen = null;
-        console.log('no intersections');
     }
-    console.log(hexToOpen);
 }
 
-function defineHexFromIntersection(closestObject) {
+function getHexIDFromIntersection(closestObject) {
     let hexID;
     if (closestObject.name === '') {
         let object = closestObject;
@@ -79,16 +86,6 @@ function defineHexFromIntersection(closestObject) {
     }
 }
 
-function RenderWorldScene() {
-    const deltaTime = Clock.getDelta();
-    const totalTime = Clock.getElapsedTime();
-
-    renderer.render(world, camera);
-    world.update(deltaTime, totalTime);
-    cameraMixer.update(deltaTime);
-    camera.lookAt(0, 0, 0);
-    // ManageIntersections();
-}
 
 function setupLoadingElements(box, bar) {
     box.style.width = '100px';
@@ -111,7 +108,7 @@ function createWorldScene() {
     setupLoadingElements(loadingBox, loadingBar)
     header.hidden = true;
 
-    modelsLoadingManager.onLoad = function() {
+    THREE.DefaultLoadingManager.onLoad = function() {
         Clock.start();
         world.live();
         setupCompleted = true;
@@ -121,13 +118,14 @@ function createWorldScene() {
         loadingBar.hidden = true;
         header.hidden = false;
     }
-    modelsLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
-        loadingBar.style.width = `${itemsLoaded / itemsTotal * 100}px`
+    THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+        loadingBar.style.width = `${(itemsLoaded / itemsTotal) * 100}px`
     }
 
-    // console.log(world.children);
-
-    return world;
+    return {
+        "world": world,
+        "hexes": world.hexes.children
+    };
 }
 
 function createRenderer() {
@@ -136,7 +134,6 @@ function createRenderer() {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(2);
-    console.log(devicePixelRatio);
     renderer.shadowMap.enabled = true;
     document.body.append(renderer.domElement);
     return renderer
