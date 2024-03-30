@@ -70,8 +70,6 @@ class Hex extends THREE.Object3D {
         const HexLand = new THREE.Mesh(landGeometry, LandMaterial);
         HexLand.name = `${this.name}_land`;
         this.add(HexLand);
-
-        console.log(`Создан ${this.name}`);
     }
 
     get birdsMixers() {

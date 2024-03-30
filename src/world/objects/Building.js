@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import {Tree} from "./Tree";
-import {modelsPath} from "./world_objects";
 import {OBJLoader} from "three/addons";
 
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
+const modelsPath = '../../assets/models';
 
 const firstFloorTexture = textureLoader.load(`../assets/textures/firstFloor.png`)
 const FirstFloorMaterial = new THREE.MeshLambertMaterial({

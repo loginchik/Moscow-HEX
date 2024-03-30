@@ -1,11 +1,14 @@
 import * as THREE from "three";
-import {World} from "./world/world";
+import {World} from "./world/World_scene";
 import jsonData from "../src/data.json" assert { type: 'json' };
-import {Clock} from "./world/world";
-import {selfRotatingWorldCamera, cameraMixer, cameraCLip} from "./cameras/Self_rotating_big";
-import {CreateManualControls, manualRotatingWorldCamera} from "./cameras/Manual_rotating_big";
+import {Clock} from "./world/World_scene";
+import {
+    selfRotatingWorldCamera,
+    cameraMixer,
+    cameraCLip,
+} from "./cameras/Self_rotating_world";
+import {CreateManualControls, manualRotatingWorldCamera} from "./cameras/Manual_rotating_world";
 import {Vector2} from "three";
-import {OrbitControls} from "three/addons";
 
 Clock.autoStart = false;
 THREE.Cache.enabled = true;

@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import {Hex} from './objects/world_objects'
+import {Hex} from './objects/Hex'
 import {SunBase} from "./objects/Sun";
-import {EastLight, WestLight} from "./static_lights";
+import {EastLight, WestLight} from "./Lights";
 import colors from "../colors.json"
 
 const Clock = new THREE.Clock();

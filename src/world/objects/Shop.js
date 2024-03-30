@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import {modelsPath, texturesPath} from "./world_objects";
 import {OBJLoader} from "three/addons";
 
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
+const modelsPath = '../../assets/models';
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 
 const ShopMaterialTexture = textureLoader.load(`../assets/textures/shopColor.png`);
