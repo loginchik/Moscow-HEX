@@ -15,25 +15,29 @@ manualRotatingWorldCamera.lookAt(0, 0, 0);
 manualRotatingWorldCamera.name = 'Manual world';
 
 function CreateManualControls(domElement) {
-    const WorldManualControls = new OrbitControls(manualRotatingWorldCamera, domElement);
-    WorldManualControls.enabled = true;
-    WorldManualControls.enablePan = true;
-    WorldManualControls.panSpeed = 3;
-    WorldManualControls.enableDamping = true;
-    WorldManualControls.keys = {
+    const controls = new OrbitControls(manualRotatingWorldCamera, domElement);
+    controls.enabled = true;
+    controls.enablePan = true;
+    controls.panSpeed = 3;
+    controls.enableDamping = true;
+    controls.keys = {
         LEFT: 'ArrowLeft', //left arrow
         UP: 'ArrowUp', // up arrow
         RIGHT: 'ArrowRight', // right arrow
         BOTTOM: 'ArrowDown' // down arrow
     }
-    WorldManualControls.listenToKeyEvents(window);
+    controls.listenToKeyEvents(window);
+    controls.maxPolarAngle = 1.5;
+    controls.maxDistance = 130;
+    controls.minDistance = 35;
+    controls.maxTargetRadius = 15;
 
     const resetButton = document.getElementById('resetManualWorldButton');
     resetButton.addEventListener('click', function(event) {
-        WorldManualControls.reset();
+        controls.reset();
     })
 
-    return WorldManualControls;
+    return controls;
 }
 
 export {manualRotatingWorldCamera, CreateManualControls}
