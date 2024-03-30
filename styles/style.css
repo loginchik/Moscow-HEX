@@ -8,6 +8,12 @@ canvas {
     z-index: 5;
 }
 
+nav {
+    position: absolute;
+    bottom: 30px;
+    left: 20px;
+}
+
 header {
     width: calc(100vw / 4);
     position: absolute;

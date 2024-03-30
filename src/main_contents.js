@@ -2,8 +2,10 @@ import * as THREE from "three";
 import {World} from "./world/world";
 import jsonData from "../src/data.json" assert { type: 'json' };
 import {Clock} from "./world/world";
-import {camera, cameraMixer, cameraCLip} from "./cameras/cameras";
+import {selfRotatingWorldCamera, cameraMixer, cameraCLip} from "./cameras/Self_rotating_big";
+import {CreateManualControls, manualRotatingWorldCamera} from "./cameras/Manual_rotating_big";
 import {Vector2} from "three";
+import {OrbitControls} from "three/addons";
 
 Clock.autoStart = false;
 THREE.Cache.enabled = true;
@@ -15,22 +17,35 @@ const mouse = new Vector2();
 const worldAndHexes = createWorldScene();
 const world = worldAndHexes['world'], hexes = worldAndHexes['hexes'];
 let hexToOpen = null;
-let viewMode = 'world';
+
+const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
+let currentCamera = camerasAvailable[1];
+let currentScene = world;
+const WorldManualControls = CreateManualControls(renderer.domElement);
+
+const resetWorldManualButton = document.getElementById('resetManualWorldButton');
 
 // Рендерит необходимые объекты на сцене так, чтобы все работало сладко-гладко
 export function RenderScene() {
     requestAnimationFrame(RenderScene);
     if (setupCompleted) {
-        if (viewMode === 'world') {
-            const deltaTime = Clock.getDelta();
-            const totalTime = Clock.getElapsedTime();
+        const deltaTime = Clock.getDelta();
+        const totalTime = Clock.getElapsedTime();
 
-            renderer.render(world, camera);
-            world.update(deltaTime, totalTime);
-            cameraMixer.update(deltaTime);
-            camera.lookAt(0, 0, 0);
-            ManageIntersections();
+        renderer.render(currentScene, currentCamera);
+        world.update(deltaTime, totalTime);
+
+        switch (currentCamera) {
+            case selfRotatingWorldCamera:
+                cameraMixer.update(deltaTime);
+                selfRotatingWorldCamera.lookAt(0, 0, 0);
+                break;
+            case manualRotatingWorldCamera:
+                WorldManualControls.update();
+                break;
         }
+
+        ManageIntersections();
     }
 }
 
@@ -42,7 +57,7 @@ document.addEventListener('mousemove', function(event) {
 
 const raycaster = new THREE.Raycaster()
 function ManageIntersections() {
-    raycaster.setFromCamera(mouse, camera);
+    raycaster.setFromCamera(mouse, selfRotatingWorldCamera);
     const intersects = raycaster.intersectObjects(world.children);
     if (intersects.length > 0) {
         const closest = intersects[0].object;
@@ -105,8 +120,27 @@ function createWorldScene() {
     const loadingBox = document.getElementById('loadingBox');
     const loadingBar = document.getElementById('loadingBar');
     const header = document.getElementsByTagName('header')[0];
+    const nav = document.getElementsByTagName('nav')[0];
     setupLoadingElements(loadingBox, loadingBar)
     header.hidden = true;
+    nav.hidden = true;
+
+    const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
+    const camerasDiv = document.getElementById('cameraSwitchButtons')
+    for (let camera of camerasAvailable) {
+        const button = document.createElement('button')
+        button.id = camera.name;
+        button.innerText = camera.name;
+        button.addEventListener('click', function (event) {
+            currentCamera = camera;
+            if (camera === manualRotatingWorldCamera) {
+                resetWorldManualButton.hidden = false;
+            } else {
+                resetWorldManualButton.hidden = true;
+            }
+        })
+        camerasDiv.appendChild(button);
+    }
 
     THREE.DefaultLoadingManager.onLoad = function() {
         Clock.start();
@@ -117,6 +151,7 @@ function createWorldScene() {
         loadingBox.hidden = true;
         loadingBar.hidden = true;
         header.hidden = false;
+        nav.hidden = false;
     }
     THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
         loadingBar.style.width = `${(itemsLoaded / itemsTotal) * 100}px`
@@ -134,14 +169,14 @@ function createRenderer() {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(2);
-    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.enabled = false;
     document.body.append(renderer.domElement);
     return renderer
 }
 
 // Адаптация под изменения экрана
 window.onresize = function() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    currentCamera.aspect = window.innerWidth / window.innerHeight;
+    currentCamera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }

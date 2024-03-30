@@ -5,12 +5,12 @@ const near = 1;
 const far = 1000;
 const aspect = window.innerWidth / window.innerHeight;
 // Создаём камеру, которая будет использоваться для базового отображения
-const camera = new THREE.PerspectiveCamera(FOV + 10, aspect, near, far);
-camera.position.z = -15;
-camera.position.x = 126;
-camera.position.y = 26;
-camera.lookAt(0, 0, 0);
-camera.name = 'Летает вокруг';
+const selfRotatingWorldCamera = new THREE.PerspectiveCamera(FOV + 10, aspect, near, far);
+selfRotatingWorldCamera.position.z = -15;
+selfRotatingWorldCamera.position.x = 126;
+selfRotatingWorldCamera.position.y = 26;
+selfRotatingWorldCamera.lookAt(0, 0, 0);
+selfRotatingWorldCamera.name = 'Auto world';
 
 const cameraR = 100;
 const cameraY = 50;
@@ -28,7 +28,7 @@ for (let i = 0; i <= duration; i++) {
 }
 const cameraTrack = new THREE.VectorKeyframeTrack('.position', cameraTimes, cameraPositions, THREE.InterpolateSmooth);
 const cameraCLip = new THREE.AnimationClip('Camera around', -1, [cameraTrack]);
-const cameraMixer = new THREE.AnimationMixer(camera);
+const cameraMixer = new THREE.AnimationMixer(selfRotatingWorldCamera);
 
 
-export {camera, cameraMixer, cameraCLip}
+export {selfRotatingWorldCamera, cameraMixer, cameraCLip}
