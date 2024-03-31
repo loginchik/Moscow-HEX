@@ -4,7 +4,7 @@ import {OBJLoader} from "three/addons";
 
 
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager)
-const modelsPath = '../../assets/models';
+const modelsPath = '/models';
 
 const TrunkMaterial = new THREE.MeshLambertMaterial();
 TrunkMaterial.color.set(new THREE.Color(colors["tree"]["trunk"]));

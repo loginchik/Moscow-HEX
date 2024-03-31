@@ -8,10 +8,6 @@ import {Scene} from "three";
 import {createHexInfoHeader, createTopNavigation} from "../../Headers";
 import {EastLight, WestLight} from "../Lights";
 
-export const modelsPath = '../../assets/models';
-export const texturesPath = '../../assets/textures';
-
-
 const landR = 6;
 const LandMaterial = new THREE.MeshLambertMaterial();
 LandMaterial.color.set(colors['hexLand']);

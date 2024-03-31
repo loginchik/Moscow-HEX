@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
-const modelsPath = '../../assets/models';
+const modelsPath = '/models';
 
 // Содержит геометрию птицы и анимацию её полёта.
 export class Bird extends THREE.Object3D {

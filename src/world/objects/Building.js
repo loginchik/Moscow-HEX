@@ -4,14 +4,14 @@ import {OBJLoader} from "three/addons";
 
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
-const modelsPath = '../../assets/models';
+const modelsPath = '/models';
 
-const firstFloorTexture = textureLoader.load(`../assets/textures/firstFloor.png`)
+const firstFloorTexture = textureLoader.load(`/textures/firstFloor.png`)
 const FirstFloorMaterial = new THREE.MeshLambertMaterial({
     map: firstFloorTexture,
 });
 
-const otherFloorTexture = textureLoader.load(`../assets/textures/otherFloor.png`)
+const otherFloorTexture = textureLoader.load(`/textures/otherFloor.png`)
 const OtherFloorMaterial = new THREE.MeshLambertMaterial({
     map: otherFloorTexture,
 });

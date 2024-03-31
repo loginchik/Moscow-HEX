@@ -2,16 +2,16 @@ import * as THREE from "three";
 import {OBJLoader} from "three/addons";
 
 const modelsLoader = new OBJLoader(THREE.DefaultLoadingManager);
-const modelsPath = '../../assets/models';
+const modelsPath = '/models';
 const textureLoader = new THREE.TextureLoader(THREE.DefaultLoadingManager);
 
-const ShopMaterialTexture = textureLoader.load(`../assets/textures/shopColor.png`);
+const ShopMaterialTexture = textureLoader.load(`/textures/shopColor.png`);
 const ShopMaterial = new THREE.MeshLambertMaterial({
     map: ShopMaterialTexture,
 });
 
-const CartColor = textureLoader.load(`../assets/textures/cartColor.png`);
-const CartSpecular = textureLoader.load(`../assets/textures/cartGlossy.png`);
+const CartColor = textureLoader.load(`/textures/cartColor.png`);
+const CartSpecular = textureLoader.load(`/textures/cartGlossy.png`);
 const CartMaterial = new THREE.MeshLambertMaterial({
     map: CartColor,
     specularMap: CartSpecular,
