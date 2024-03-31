@@ -47,6 +47,7 @@ const hexLoaderBar = document.getElementById('hexLoaderBar');
 const hexLoaderProgressText = document.getElementById('hexLoaderStatus');
 
 const resetWorldManualButton = document.getElementById('resetManualWorldButton');
+resetWorldManualButton.hidden = currentCamera !== manualRotatingWorldCamera;
 
 // Рендерит необходимые объекты на сцене так, чтобы все работало сладко-гладко
 export function RenderScene() {
