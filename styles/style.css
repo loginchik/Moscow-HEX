@@ -11,7 +11,9 @@
     --loader-color: #BC6C25;
     --bg-color: #242424;
 
-    --font-family: "Roboto Light", sans-serif
+    --font-family: "Roboto Light", sans-serif;
+
+    --github-horizontal-size: 30px;
 }
 
 /* Основные настройки */
@@ -141,7 +143,7 @@ button:hover {
 
 nav#view-controls {
     position: absolute;
-    width: calc(100% - calc(var(--horizontal-body-margin) * 2));
+    width: calc(100% - calc(var(--horizontal-body-margin) * 3) - var(--github-horizontal-size));
     bottom: var(--vertical-body-margin);
     left: var(--horizontal-body-margin);
 
@@ -175,4 +177,13 @@ nav#view-controls div#hexLoaderBar {
     background: var(--text-color);
     width: 100%;
     height: 10px;
+}
+
+/* Иконка Github */
+
+img#github-icon {
+    position: absolute;
+    width: var(--github-horizontal-size);
+    bottom: var(--vertical-body-margin);
+    right: var(--horizontal-body-margin);
 }
