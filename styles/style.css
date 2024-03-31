@@ -1,55 +1,178 @@
+:root {
+    --main-font-size: 13px;
+    --header-font-size: 20px;
+
+    --horizontal-body-margin: 20px;
+    --vertical-body-margin: 30px;
+
+    --inner-gap: 5px;
+
+    --text-color: #FEFAE0;
+    --loader-color: #BC6C25;
+    --bg-color: #242424;
+
+    --font-family: "Roboto Light", sans-serif
+}
+
+/* Основные настройки */
 body {
     margin: 0;
-    font-family: "Roboto Light", sans-serif;
-    color: #FEFAE0;
+    font-family: var(--font-family);
+    color: var(--text-color);
 }
 
 canvas {
     z-index: 5;
 }
 
-nav {
-    position: absolute;
-    bottom: 30px;
-    left: 20px;
+span.icon {
+    font-size: 20px;
 }
 
+/* Информационные блоки */
+
 header {
-    width: calc(100vw / 4);
     position: absolute;
-    right: 20px;
-    top: 30px;
+    right: var(--horizontal-body-margin);
+    top: var(--vertical-body-margin);
     z-index: 10;
 }
 
-h1 {
-    font-size: 20px;
-    padding: 0;
-    margin-bottom: 5px;
+/* Информация о мире */
+
+header#worldInfo {
+    width: calc(100vw / 4);
 }
 
-header p {
-    font-size: 13px;
+header#worldInfo h1 {
+    font-size: var(--header-font-size);
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: var(--inner-gap);
+}
+
+header#worldInfo p {
+    font-size: var(--main-font-size);
     margin: 0;
     padding: 0;
-    margin-bottom: 5px;
+    margin-bottom: var(--inner-gap);
 }
 
-p#uber {
+header#worldInfo p#uber {
     font-style: italic;
-    margin-bottom: 13px;
+    margin-bottom: var(--main-font-size);
 }
+
+/* Информация о гексе */
+
+header#hexInfo {
+    width: calc(100vw / 3);
+}
+
+header#hexInfo h1 {
+    font-size: var(--header-font-size);
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: calc(var(--inner-gap) * 2);
+}
+
+header#hexInfo table {
+    width: 100%;
+    margin-bottom: var(--inner-gap);
+}
+
+header#hexInfo table td {
+    font-size: 13px;
+    vertical-align: top;
+}
+
+header#hexInfo table td.row-label {
+    padding: 0;
+    padding-bottom: var(--inner-gap);
+    width: 70%;
+}
+
+header#hexInfo table td.row-value {
+    padding: 0;
+    padding-left: var(--inner-gap);
+}
+
+/* Элементы загрузки */
 
 div#loadingBox, div#loadingBar {
     position: absolute;
 }
 
 div#loadingBox {
-    border: 1px solid #BC6C25;
+    outline: 1px solid var(--loader-color);
 }
 
 div#loadingBar {
     transform-origin: left;
-    background: #BC6C25;
+    background: var(--loader-color);
+    height: 10px;
+}
+
+/* Кнопки */
+
+nav {
+    z-index: 7;
+}
+
+nav#top {
+    position: absolute;
+    top: var(--vertical-body-margin);
+    left: var(--horizontal-body-margin);
+}
+
+button {
+    border: 1px solid var(--text-color);
+    padding: calc(var(--inner-gap) * 2) var(--inner-gap);
+    background: transparent;
+    color: var(--text-color);
+    font-family: inherit;
+    min-width: 40px;
+}
+
+button:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+}
+
+nav#view-controls {
+    position: absolute;
+    width: calc(100% - calc(var(--horizontal-body-margin) * 2));
+    bottom: var(--vertical-body-margin);
+    left: var(--horizontal-body-margin);
+
+    gap: var(--inner-gap);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+nav#view-controls div#cameraSwitchButtons {
+    max-width: 40%;
+    display: flex;
+    flex-direction: row;
+    gap: var(--inner-gap);
+}
+
+nav#view-controls div#hexLoader {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--inner-gap);
+
+    font-size: var(--main-font-size);
+}
+
+nav#view-controls div#hexLoaderBar {
+    background: var(--text-color);
+    width: 100%;
     height: 10px;
 }

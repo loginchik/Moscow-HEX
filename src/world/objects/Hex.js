@@ -4,6 +4,7 @@ import colors from "../../colors.json"
 import {Shop} from "./Shop";
 import {Building} from "./Building";
 import {Bird} from "./Bird";
+import {Scene} from "three";
 
 export const modelsPath = '../../assets/models';
 export const texturesPath = '../../assets/textures';
@@ -95,4 +96,38 @@ class Hex extends THREE.Object3D {
     }
 }
 
-export {Hex};
+function CreateSoloHexScene(featureData) {
+    const hexID = document.getElementById('hexID')
+    hexID.innerText = featureData['id']
+    const meanFloors = document.getElementById('hexMeanFloors');
+    meanFloors.innerText = featureData['meanFloors'];
+    const meanYear = document.getElementById('hexMeanYear');
+    meanYear.innerText = featureData['meanYear'];
+    const maxFloors = document.getElementById('hexMaxFloors');
+    maxFloors.innerText = featureData['maxFloors'];
+    const maxYear = document.getElementById('hexMaxYear');
+    maxYear.innerText = featureData['maxYear'];
+    const commercial = document.getElementById('hexCommercial');
+    commercial.innerText = Math.round(featureData['commercialRatio'] * 100)
+
+    const oppositePlace = Math.floor(featureData['cost'] * 24);
+    const costPlaceValue = 25 - oppositePlace;
+    const costPlace = document.getElementById('hexCostPlace');
+    costPlace.innerText = costPlaceValue;
+
+    const topNavigation = document.getElementById('top');
+    topNavigation.hidden = false;
+
+    const hex = new Hex(featureData, [], []);
+    const scene = new Scene();
+    const lights = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 1);
+    scene.background = new THREE.Color(colors['background']);
+    scene.add(lights);
+    scene.add(hex);
+
+    hex.startBirds();
+
+    return [scene, hex.birdsMixers];
+}
+
+export {Hex, CreateSoloHexScene};

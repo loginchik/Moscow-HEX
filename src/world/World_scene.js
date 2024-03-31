@@ -4,7 +4,7 @@ import {SunBase} from "./objects/Sun";
 import {EastLight, WestLight} from "./Lights";
 import colors from "../colors.json"
 
-const Clock = new THREE.Clock();
+const Clock = new THREE.Clock(false);
 
 class World extends THREE.Scene {
     constructor() {

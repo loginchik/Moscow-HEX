@@ -1,30 +1,48 @@
+// Импорт из сторонних библиотек
 import * as THREE from "three";
-import {World} from "./world/World_scene";
-import jsonData from "../src/data.json" assert { type: 'json' };
-import {Clock} from "./world/World_scene";
-import {
-    selfRotatingWorldCamera,
-    cameraMixer,
-    cameraCLip,
-} from "./cameras/Self_rotating_world";
-import {CreateManualControls, manualRotatingWorldCamera} from "./cameras/Manual_rotating_world";
 import {Vector2} from "three";
 
-Clock.autoStart = false;
-THREE.Cache.enabled = true;
-let setupCompleted = false;
+// Импорт данных
+import jsonData from "../src/data.json" assert { type: 'json' };
 
+// Импорт собственных объектов
+import {World} from "./world/World_scene";
+import {Clock} from "./world/World_scene";
+import {selfRotatingWorldCamera, cameraMixer, cameraCLip} from "./cameras/Self_rotating_world";
+import {CreateManualControls, manualRotatingWorldCamera} from "./cameras/Manual_rotating_world";
+import {ManageIntersections} from "./Manage_intersections";
+import {CreateSoloHexScene} from "./world/objects/Hex";
+import {manualRotatingHexCamera, CreateManualHexControls} from "./cameras/Manual_rotating_hex";
+import {setupLoadingElements, removeLoadingElements, updateProgress} from "./Loading";
+import {createRenderer} from "./Renderer";
+
+// Базовые донастройки
+THREE.Cache.enabled = true;
+// Ключевой обработчик
 const renderer = createRenderer();
+// Вектор, где хранится положение мыши
 const mouse = new Vector2();
 
+// Часы, которые будут отсчитывать время от начала нажатия мышью на объект гекса
+const mouseDownClock = new THREE.Clock(false);
+
+let setupCompleted = false;
+
 const worldAndHexes = createWorldScene();
-const world = worldAndHexes['world'], hexes = worldAndHexes['hexes'];
-let hexToOpen = null;
+const world = worldAndHexes['world'];
+
+let hexIdToOpen = null;
+let birdsMixers = null;
 
 const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
 let currentCamera = camerasAvailable[1];
 let currentScene = world;
 const WorldManualControls = CreateManualControls(renderer.domElement);
+const HexManualControls = CreateManualHexControls(renderer.domElement);
+
+const hexLoader = document.getElementById('hexLoader');
+const hexLoaderBar = document.getElementById('hexLoaderBar');
+const hexLoaderProgressText = document.getElementById('hexLoaderStatus');
 
 const resetWorldManualButton = document.getElementById('resetManualWorldButton');
 
@@ -46,72 +64,139 @@ export function RenderScene() {
             case manualRotatingWorldCamera:
                 WorldManualControls.update();
                 break;
+            case manualRotatingHexCamera:
+                HexManualControls.update();
+                break;
         }
 
-        ManageIntersections();
-    }
-}
-
-
-document.addEventListener('mousemove', function(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-})
-
-const raycaster = new THREE.Raycaster()
-function ManageIntersections() {
-    raycaster.setFromCamera(mouse, selfRotatingWorldCamera);
-    const intersects = raycaster.intersectObjects(world.children);
-    if (intersects.length > 0) {
-        const closest = intersects[0].object;
-        const intersectingHexID = getHexIDFromIntersection(closest);
-        if (intersectingHexID !== null) {
-            for (let hex of hexes) {
-                if (hex.name.includes(intersectingHexID)) {
-                    hexToOpen = hex;
-                    break
-                }
+        if (currentScene === world) {
+            if (mouseDownClock.running) {
+                const progress = Math.min(100, mouseDownClock.getElapsedTime() / 3 * 100);
+                hexLoaderBar.style.width = `${progress}%`;
+                hexLoaderProgressText.innerText = Math.round(progress / 10) * 10;
             }
         } else {
-            hexToOpen = null;
+            if (birdsMixers !== null) {
+                birdsMixers.forEach(function(mixer) {
+                    mixer.update(deltaTime);
+                })
+            }
         }
-    } else {
-        hexToOpen = null;
     }
 }
 
-function getHexIDFromIntersection(closestObject) {
-    let hexID;
-    if (closestObject.name === '') {
-        let object = closestObject;
-        let objectName = object.name;
-        while (objectName === '') {
-            object = object.parent;
-            objectName = object.name;
-        }
-        hexID = objectName;
-    } else {
-        hexID = closestObject.name;
+function MouseDownListener(event) {
+    if (currentScene !== world) {
+        return
     }
-    if (hexID !== '') {
-        if (hexID.includes('HEX')) {
-            return hexID.split('_')[1];
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    hexIdToOpen = ManageIntersections(mouse, currentCamera, world.children);
+    if (hexIdToOpen != null) {
+        const hexLoader = document.getElementById('hexLoader');
+        hexLoader.style.display = 'flex';
+        hexLoaderBar.style.width = '0%';
+        mouseDownClock.start();
+    }
+}
+function MouseUpListener(event) {
+    if (mouseDownClock.running) {
+        const timePassed = mouseDownClock.getElapsedTime();
+        mouseDownClock.stop();
+        if (timePassed > 3) {
+            let hexData;
+            for (let record of jsonData['features']) {
+                if (record['id'] == hexIdToOpen) {
+                    hexData = record;
+                }
+            }
+            if (!(hexData === undefined)) {
+                const HexSceneMixer= CreateSoloHexScene(hexData);
+                const hexScene = HexSceneMixer[0];
+                birdsMixers = HexSceneMixer[1];
+                currentScene = hexScene;
+                currentCamera = manualRotatingHexCamera;
+            }
         } else {
-            return null;
+            hexLoaderBar.style.width = '0%';
         }
-    } else {
-        return null;
+        hexLoader.style.display = 'none';
     }
 }
 
 
-function setupLoadingElements(box, bar) {
-    box.style.width = '100px';
-    box.style.height = '10px';
-    box.style.top = `${(window.innerHeight - 10) / 2}px`;
-    bar.style.top = `${(window.innerHeight - 10) / 2}px`;
-    box.style.left = `${(window.innerWidth - 100) / 2}px`;
-    bar.style.left = `${(window.innerWidth - 100) / 2}px`;
+renderer.domElement.addEventListener('mousedown', MouseDownListener)
+renderer.domElement.addEventListener('mouseup', MouseUpListener)
+
+const backToWorldButton = document.getElementById('backToWorldButton');
+backToWorldButton.addEventListener('click', function (event) {
+    const worldHeader = document.getElementById('worldInfo');
+    worldHeader.hidden = false;
+    const hexInfo = document.getElementById('hexInfo');
+    hexInfo.hidden = true;
+    const topNavigation = document.getElementById('top');
+    topNavigation.hidden = true;
+
+    currentScene = world;
+    currentCamera = selfRotatingWorldCamera;
+    resetWorldManualButton.hidden = true;
+})
+
+THREE.DefaultLoadingManager.onLoad = function() {
+    // Когда загрузка, завершается уничтожаем загрузчики
+    removeLoadingElements();
+
+    // Находим две возможных шапки: одну из них нужно будет скрыть, другую показать
+    const worldHeader = document.getElementById('worldInfo');
+    const hexInfo = document.getElementById('hexInfo');
+
+    // Если нудно загрузить целый мир
+    if (currentScene === world) {
+        // Находим навигацию вида и показываем её
+        const viewControls = document.getElementById('view-controls');
+        viewControls.style.display = 'flex';
+        // Включаем нужный заголовок и выключаем ненужный
+        worldHeader.hidden = false;
+        hexInfo.hidden = true;
+
+        const loaderBarBlock = document.getElementById('hexLoader');
+        loaderBarBlock.style.display = 'none';
+
+        // Запускаем часы и мир
+        Clock.start();
+        world.live();
+        // Запускаем камеру
+        cameraMixer.clipAction(cameraCLip).play();
+
+    } else {
+        // Если нужно загрузить отдельный гекс
+
+        // Находим навигацию вида и скрываем её
+        const nav = document.getElementById('view-controls');
+        nav.style.display = 'none';
+        // Находим верхнюю навигацию и включаем её
+        const navTop = document.getElementById('top');
+        navTop.hidden = false;
+        // Переключаем заголовки
+        worldHeader.hidden = true;
+        hexInfo.hidden = false;
+
+        console.log('Гекс загружен')
+    }
+    // Устанавливаем статус загрузки на завершённый
+    setupCompleted = true;
+}
+
+THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
+    const progress = itemsLoaded / itemsTotal;
+    // Если элементы загрузки уже есть, то обновляем их
+    try {
+        updateProgress(progress);
+    } catch (error) {
+        // В противном случае, создаём элементы
+        setupLoadingElements(progress);
+    }
+    setupCompleted = false;
 }
 
 function createWorldScene() {
@@ -119,62 +204,35 @@ function createWorldScene() {
     const world = new World();
     world.build(jsonData);
 
-    // Анимация загрузки
-    const loadingBox = document.getElementById('loadingBox');
-    const loadingBar = document.getElementById('loadingBar');
-    const header = document.getElementsByTagName('header')[0];
-    const nav = document.getElementsByTagName('nav')[0];
-    setupLoadingElements(loadingBox, loadingBar)
+    const header = document.getElementById('worldInfo');
     header.hidden = true;
-    nav.hidden = true;
+    const hexHeader = document.getElementById('hexInfo');
+    hexHeader.hidden = true;
+    const topNavigation = document.getElementById('top');
+    topNavigation.hidden = true;
+    const viewControls = document.getElementById('view-controls');
+    viewControls.style.display = 'none';
 
     const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
     const camerasDiv = document.getElementById('cameraSwitchButtons')
+    let cameraI = 1;
     for (let camera of camerasAvailable) {
         const button = document.createElement('button')
         button.id = camera.name;
-        button.innerText = camera.name;
+        button.innerText = `C${cameraI}`;
+        button.title = camera.name;
         button.addEventListener('click', function (event) {
             currentCamera = camera;
-            if (camera === manualRotatingWorldCamera) {
-                resetWorldManualButton.hidden = false;
-            } else {
-                resetWorldManualButton.hidden = true;
-            }
+            resetWorldManualButton.hidden = camera !== manualRotatingWorldCamera;
         })
         camerasDiv.appendChild(button);
-    }
-
-    THREE.DefaultLoadingManager.onLoad = function() {
-        Clock.start();
-        world.live();
-        setupCompleted = true;
-        cameraMixer.clipAction(cameraCLip).play();
-        console.log('Загружено!');
-        loadingBox.hidden = true;
-        loadingBar.hidden = true;
-        header.hidden = false;
-        nav.hidden = false;
-    }
-    THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
-        loadingBar.style.width = `${(itemsLoaded / itemsTotal) * 100}px`
+        cameraI++;
     }
 
     return {
         "world": world,
         "hexes": world.hexes.children
     };
-}
-
-function createRenderer() {
-    // Создаём ключевой обработчик, который всё обрабатывает
-
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(2);
-    renderer.shadowMap.enabled = false;
-    document.body.append(renderer.domElement);
-    return renderer
 }
 
 // Адаптация под изменения экрана

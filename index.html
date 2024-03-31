@@ -4,28 +4,74 @@
     <meta charset="utf-8">
     <title>HEX ЦАО</title>
     <link rel="stylesheet" href="./styles/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script type="module" src="./main.js"></script>
 </head>
 <body>
-<header>
+<header id="worldInfo">
     <h1>ЦАО Москвы</h1>
     <p id="uber">Вдохновлено Uber'ом</p>
     <p id="hex">hex level: 7</p>
     <p id="description">
-        один дом&nbsp;— средняя этажность, деревья перед ним&nbsp;— средний год постройки.
-        другой дом&nbsp;— максимальная этажность, деревья&nbsp;перед&nbsp;ним&nbsp;— год постройки.
-        тележки перед магазином&nbsp;— доля коммерческой недвижимости.
-        птицы&nbsp;— относительная дороговизна недвижимости&nbsp;среди&nbsp;данных.
+        один дом&nbsp;&mdash; средняя этажность, деревья перед ним&nbsp;&mdash; средний год постройки.
+        другой дом&nbsp;&mdash; максимальная этажность, деревья&nbsp;перед&nbsp;ним&nbsp;&mdash; год постройки.
+        тележки перед магазином&nbsp;&mdash; доля коммерческой недвижимости.
+        птицы&nbsp;&mdash; относительная дороговизна недвижимости&nbsp;среди&nbsp;данных.
     </p>
 </header>
 
-<nav>
-    <button id="resetManualWorldButton">Сбросить положение камеры</button>
+<header id="hexInfo">
+    <h1>HEX #<span id="hexID">1</span></h1>
+    <table>
+        <tr>
+            <td class="row-label">Этажей в&nbsp;среднем</td>
+            <td  class="row-value" id="hexMeanFloors">4</td>
+        </tr>
+        <tr>
+            <td class="row-label">Средний год постройки</td>
+            <td  class="row-value" id="hexMeanYear">1990</td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="row-label">Этажей в&nbsp;высочайшем здании</td>
+            <td  class="row-value" id="hexMaxFloors">25</td>
+        </tr>
+        <tr>
+            <td class="row-label">Год постройки</td>
+            <td  class="row-value" id="hexMaxYear">2020</td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td class="row-label" title="Назначение здания фиксируется при&nbsp;регистрации кадастрового объекта">
+                Доля коммерческой застройки
+            </td>
+            <td  class="row-value"><span id="hexCommercial">90</span>%</td>
+        </tr>
+        <tr>
+            <td class="row-label">Место среди гексов по&nbsp;средней кадастровой стоимости (1&nbsp;&mdash; макс.)</td>
+            <td class="row-value"><span id="hexCostPlace">3</span>/<span id="hexCount">24</span>
+        </tr>
+    </table>
+</header>
+
+<nav id="view-controls">
     <div id="cameraSwitchButtons"></div>
+    <div id="hexLoader">
+        <div id="hexLoaderLabel">Продолжайте нажимать на объект, чтобы открыть приближенный просмотр</div>
+        <div id="hexLoaderBar"></div>
+        <div><span id="hexLoaderStatus">100</span>%</div>
+    </div>
+    <button id="resetManualWorldButton" title="Сбросить положение камеры"><span class="icon">&#10226;</span></button>
 </nav>
 
-<div id="loadingBox"></div>
-<div id="loadingBar"></div>
+<nav id="top">
+    <button id="backToWorldButton" title="К миру"><span class="icon">&larr;</span></button>
+</nav>
+
+<!--<div id="loadingBox"></div>-->
+<!--<div id="loadingBar"></div>-->
 
 </body>
 </html>

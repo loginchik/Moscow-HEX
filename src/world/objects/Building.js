@@ -67,7 +67,8 @@ export class Building extends THREE.Object3D {
 
         this.add(doorLight, doorLightTarget);
         this.mixer = new THREE.AnimationMixer(doorLight);
-        this.createAnimations(times, positions)
+        if (times.length > 0 && positions.length > 0)
+            this.createAnimations(times, positions)
     }
 
     playLights() {
