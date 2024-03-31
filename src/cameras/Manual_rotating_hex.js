@@ -29,7 +29,7 @@ function CreateManualHexControls(domElement) {
     controls.listenToKeyEvents(window);
     controls.maxPolarAngle = 1.25;
     controls.maxDistance = 95;
-    controls.minDistance = 15;
+    controls.minDistance = 10;
     controls.maxTargetRadius = 5;
 
     const resetButton = document.getElementById('resetManualWorldButton');

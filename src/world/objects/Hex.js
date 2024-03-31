@@ -5,6 +5,8 @@ import {Shop} from "./Shop";
 import {Building} from "./Building";
 import {Bird} from "./Bird";
 import {Scene} from "three";
+import {createHexInfoHeader, createTopNavigation} from "../../Headers";
+import {EastLight, WestLight} from "../Lights";
 
 export const modelsPath = '../../assets/models';
 export const texturesPath = '../../assets/textures';
@@ -97,6 +99,21 @@ class Hex extends THREE.Object3D {
 }
 
 function CreateSoloHexScene(featureData) {
+    // Удаляем заголовок мира
+    try {
+        const worldHeader = document.getElementById('worldInfo');
+        worldHeader.remove();
+    } catch (error) {
+        console.log(error);
+    }
+    // Создаём навигацию верхнюю
+    const topNavigation = createTopNavigation();
+    document.body.append(topNavigation);
+    // Создаём заголовок
+    const header = createHexInfoHeader();
+    document.body.append(header);
+
+    // Заполняем заголовок гекса
     const hexID = document.getElementById('hexID')
     hexID.innerText = featureData['id']
     const meanFloors = document.getElementById('hexMeanFloors');
@@ -115,18 +132,27 @@ function CreateSoloHexScene(featureData) {
     const costPlace = document.getElementById('hexCostPlace');
     costPlace.innerText = costPlaceValue;
 
-    const topNavigation = document.getElementById('top');
-    topNavigation.hidden = false;
-
+    // Создаём гекс и сцену для него
     const hex = new Hex(featureData, [], []);
+    hex.position.y -= 2;
+    hex.rotation.y = Math.PI / 4;
     const scene = new Scene();
-    const lights = new THREE.AmbientLight(new THREE.Color(1, 1, 1), 1);
+
+    const redLight = EastLight.clone();
+    redLight.position.x /= 2;
+    redLight.position.y /= 2;
+    const blueLight = WestLight.clone();
+    blueLight.position.x /= 2;
+    blueLight.position.y /= 2;
+
+    const lights = new THREE.AmbientLight(new THREE.Color(1, 1, 1), .3);
     scene.background = new THREE.Color(colors['background']);
-    scene.add(lights);
+    scene.add(redLight, blueLight, lights);
     scene.add(hex);
 
+    // Запускаем птиц
     hex.startBirds();
-
+    // Возвращаем объекты
     return [scene, hex.birdsMixers];
 }
 

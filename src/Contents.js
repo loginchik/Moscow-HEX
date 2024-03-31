@@ -4,6 +4,7 @@ import {Vector2} from "three";
 
 // Импорт данных
 import jsonData from "../src/data.json" assert { type: 'json' };
+import worldInfoElements from "../src/worldInfoElements.json" assert {type: 'json'};
 
 // Импорт собственных объектов
 import {World} from "./world/World_scene";
@@ -15,6 +16,7 @@ import {CreateSoloHexScene} from "./world/objects/Hex";
 import {manualRotatingHexCamera, CreateManualHexControls} from "./cameras/Manual_rotating_hex";
 import {setupLoadingElements, removeLoadingElements, updateProgress} from "./Loading";
 import {createRenderer} from "./Renderer";
+import {createWorldInfoHeader} from "./Headers";
 
 // Базовые донастройки
 THREE.Cache.enabled = true;
@@ -28,14 +30,14 @@ const mouseDownClock = new THREE.Clock(false);
 
 let setupCompleted = false;
 
-const worldAndHexes = createWorldScene();
-const world = worldAndHexes['world'];
+const world = createWorldScene();
 
 let hexIdToOpen = null;
 let birdsMixers = null;
 
 const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
-let currentCamera = camerasAvailable[1];
+let currentCamera = camerasAvailable[0];
+let lastWorldCamera;
 let currentScene = world;
 const WorldManualControls = CreateManualControls(renderer.domElement);
 const HexManualControls = CreateManualHexControls(renderer.domElement);
@@ -70,8 +72,11 @@ export function RenderScene() {
         }
 
         if (currentScene === world) {
-            if (mouseDownClock.running) {
-                const progress = Math.min(100, mouseDownClock.getElapsedTime() / 3 * 100);
+            if (mouseDownClock.running && mouseDownClock.getElapsedTime() >= .5) {
+                const hexLoader = document.getElementById('hexLoader');
+                hexLoader.style.display = 'flex';
+
+                const progress = Math.min(100, (mouseDownClock.getElapsedTime() - .5) / 3 * 100);
                 hexLoaderBar.style.width = `${progress}%`;
                 hexLoaderProgressText.innerText = Math.round(progress / 10) * 10;
             }
@@ -86,79 +91,85 @@ export function RenderScene() {
 }
 
 function MouseDownListener(event) {
-    if (currentScene !== world) {
-        return
-    }
+    // Определяем координаты мыши внутри трёхмерного пространства
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    // Находим ближайший гекс, если нажатие на него
     hexIdToOpen = ManageIntersections(mouse, currentCamera, world.children);
+    // Если гекс найден, то отображаем загрузку
     if (hexIdToOpen != null) {
-        const hexLoader = document.getElementById('hexLoader');
-        hexLoader.style.display = 'flex';
-        hexLoaderBar.style.width = '0%';
         mouseDownClock.start();
     }
 }
 function MouseUpListener(event) {
-    if (mouseDownClock.running) {
-        const timePassed = mouseDownClock.getElapsedTime();
-        mouseDownClock.stop();
-        if (timePassed > 3) {
-            let hexData;
-            for (let record of jsonData['features']) {
-                if (record['id'] == hexIdToOpen) {
-                    hexData = record;
-                }
+    // Сохраняем время и останавливаем часы
+    const timePassed = mouseDownClock.getElapsedTime();
+    mouseDownClock.stop();
+    // Если прошло достаточно времени, то открываем просмотр гекса
+    if (timePassed >= 3.5) {
+        let hexData;
+        for (let record of jsonData['features']) {
+            if (record['id'] == hexIdToOpen) {
+                hexData = record;
             }
-            if (!(hexData === undefined)) {
-                const HexSceneMixer= CreateSoloHexScene(hexData);
-                const hexScene = HexSceneMixer[0];
-                birdsMixers = HexSceneMixer[1];
-                currentScene = hexScene;
-                currentCamera = manualRotatingHexCamera;
-            }
-        } else {
-            hexLoaderBar.style.width = '0%';
         }
-        hexLoader.style.display = 'none';
+        if (!(hexData === undefined)) {
+            const HexSceneMixer= CreateSoloHexScene(hexData);
+            birdsMixers = HexSceneMixer[1];
+            currentScene = HexSceneMixer[0];
+            lastWorldCamera = currentCamera;
+            currentCamera = manualRotatingHexCamera;
+        }
+    } else {
+        hexLoaderBar.style.width = '0%';
     }
+    hexLoader.style.display = 'none';
 }
 
+function BackToWorldListener (event) {
 
-renderer.domElement.addEventListener('mousedown', MouseDownListener)
-renderer.domElement.addEventListener('mouseup', MouseUpListener)
-
-const backToWorldButton = document.getElementById('backToWorldButton');
-backToWorldButton.addEventListener('click', function (event) {
-    const worldHeader = document.getElementById('worldInfo');
-    worldHeader.hidden = false;
+    // Создаём заголовок мира
+    try {
+        const worldHeader = document.getElementById('worldInfo');
+        worldHeader.hidden = false;
+    } catch (error) {
+        const worldHeader = createWorldInfoHeader();
+        document.body.append(worldHeader);
+    }
+    // Удаляем ненужные элементы
     const hexInfo = document.getElementById('hexInfo');
-    hexInfo.hidden = true;
+    hexInfo.remove();
     const topNavigation = document.getElementById('top');
-    topNavigation.hidden = true;
+    topNavigation.remove();
 
+    // Включаем отображение контроля
+    const viewControls = document.getElementById('view-controls');
+    viewControls.style.display = 'flex';
+
+    // Возвращаем действия по мыши
+    renderer.domElement.addEventListener('mousedown', MouseDownListener)
+    renderer.domElement.addEventListener('mouseup', MouseUpListener)
+
+    // Переключаем параметры отображения
     currentScene = world;
-    currentCamera = selfRotatingWorldCamera;
+    currentCamera = lastWorldCamera || selfRotatingWorldCamera;
     resetWorldManualButton.hidden = true;
-})
+}
+
 
 THREE.DefaultLoadingManager.onLoad = function() {
     // Когда загрузка, завершается уничтожаем загрузчики
     removeLoadingElements();
-
-    // Находим две возможных шапки: одну из них нужно будет скрыть, другую показать
-    const worldHeader = document.getElementById('worldInfo');
-    const hexInfo = document.getElementById('hexInfo');
-
-    // Если нудно загрузить целый мир
+    const viewControls = document.getElementById('view-controls');
+    // Если нужно загрузить целый мир
     if (currentScene === world) {
-        // Находим навигацию вида и показываем её
-        const viewControls = document.getElementById('view-controls');
-        viewControls.style.display = 'flex';
-        // Включаем нужный заголовок и выключаем ненужный
-        worldHeader.hidden = false;
-        hexInfo.hidden = true;
+        // Создаём заголовок
+        const worldInfo = createWorldInfoHeader();
+        document.body.append(worldInfo);
 
+        // Находим навигацию вида и показываем её
+        viewControls.style.display = 'flex';
+        // Скрываем загрузчик гекса, так как он сейчас не нужен
         const loaderBarBlock = document.getElementById('hexLoader');
         loaderBarBlock.style.display = 'none';
 
@@ -167,26 +178,25 @@ THREE.DefaultLoadingManager.onLoad = function() {
         world.live();
         // Запускаем камеру
         cameraMixer.clipAction(cameraCLip).play();
-
+        // Добавляем действия по нажатию мыши
+        renderer.domElement.addEventListener('mousedown', MouseDownListener)
+        renderer.domElement.addEventListener('mouseup', MouseUpListener)
     } else {
         // Если нужно загрузить отдельный гекс
-
+        const backToWorldButton = document.getElementById('backToWorldButton');
+        backToWorldButton.addEventListener('click', BackToWorldListener);
         // Находим навигацию вида и скрываем её
-        const nav = document.getElementById('view-controls');
-        nav.style.display = 'none';
-        // Находим верхнюю навигацию и включаем её
-        const navTop = document.getElementById('top');
-        navTop.hidden = false;
-        // Переключаем заголовки
-        worldHeader.hidden = true;
-        hexInfo.hidden = false;
-
-        console.log('Гекс загружен')
+        viewControls.style.display = 'none';
+        // Убираем действия по нажатию мыши
+        renderer.domElement.removeEventListener('mousedown', MouseDownListener)
+        renderer.domElement.removeEventListener('mouseup', MouseUpListener)
     }
     // Устанавливаем статус загрузки на завершённый
     setupCompleted = true;
+    renderer.domElement.style.display = 'block';
 }
 
+// Во время загрузки прогресс отображается на странице сайта
 THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal) {
     const progress = itemsLoaded / itemsTotal;
     // Если элементы загрузки уже есть, то обновляем их
@@ -196,6 +206,7 @@ THREE.DefaultLoadingManager.onProgress = function (url, itemsLoaded, itemsTotal)
         // В противном случае, создаём элементы
         setupLoadingElements(progress);
     }
+    renderer.domElement.style.display = 'none';
     setupCompleted = false;
 }
 
@@ -204,15 +215,10 @@ function createWorldScene() {
     const world = new World();
     world.build(jsonData);
 
-    const header = document.getElementById('worldInfo');
-    header.hidden = true;
-    const hexHeader = document.getElementById('hexInfo');
-    hexHeader.hidden = true;
-    const topNavigation = document.getElementById('top');
-    topNavigation.hidden = true;
     const viewControls = document.getElementById('view-controls');
     viewControls.style.display = 'none';
 
+    // Создаём кнопки для переключения между камерами
     const camerasAvailable = [selfRotatingWorldCamera, manualRotatingWorldCamera];
     const camerasDiv = document.getElementById('cameraSwitchButtons')
     let cameraI = 1;
@@ -228,14 +234,12 @@ function createWorldScene() {
         camerasDiv.appendChild(button);
         cameraI++;
     }
-
-    return {
-        "world": world,
-        "hexes": world.hexes.children
-    };
+    return world;
 }
 
-// Адаптация под изменения экрана
+// При изменении размера окна браузера
+// камера автоматически перестраивается под соотношение сторон,
+// главный обработчик заполняет всё возможное новое допустимое пространство
 window.onresize = function() {
     currentCamera.aspect = window.innerWidth / window.innerHeight;
     currentCamera.updateProjectionMatrix();
